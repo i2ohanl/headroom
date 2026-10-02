@@ -1,26 +1,144 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-heading: var(--font-caprasimo), system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Headroom palette: the "Organic" design system tokens (see CLAUDE.md > Design).
+   Ramps are renamed to avoid clashing with shadcn's --accent and Tailwind's neutral:
+   neutral -> sand, accent -> terracotta, accent-2 -> sage. */
+@theme {
+  --color-cream: #f5ead8;
+  --color-surface: #ebddc5;
+  --color-ink: #201e1d;
+
+  --color-sand-100: #f9f4ed;
+  --color-sand-200: #eee7db;
+  --color-sand-300: #dcd3c4;
+  --color-sand-400: #c0b6a5;
+  --color-sand-500: #a19786;
+  --color-sand-600: #82796a;
+  --color-sand-700: #645c50;
+  --color-sand-800: #474238;
+  --color-sand-900: #2e2b25;
+
+  --color-terracotta-100: #fff2eb;
+  --color-terracotta-200: #ffe1d0;
+  --color-terracotta-300: #ffc6a5;
+  --color-terracotta-400: #f6a06b;
+  --color-terracotta-500: #d67f48;
+  --color-terracotta-600: #b2622d;
+  --color-terracotta-700: #8c491a;
+  --color-terracotta-800: #643312;
+  --color-terracotta-900: #402310;
+  --color-terracotta: #c67139;
+
+  --color-sage-100: #f0fae1;
+  --color-sage-200: #e1eecc;
+  --color-sage-300: #ccdbb2;
+  --color-sage-400: #aebf92;
+  --color-sage-500: #8fa073;
+  --color-sage-600: #728157;
+  --color-sage-700: #56633f;
+  --color-sage-800: #3d472b;
+  --color-sage-900: #272e1b;
+  --color-sage: #7a8a5e;
+
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2e2b25 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2e2b25 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent);
+}
+
+/* shadcn theme variables -> Organic tokens. Light theme only; there is no dark mode. */
+:root {
+  --background: var(--color-cream);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-sand-100);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-terracotta);
+  --primary-foreground: var(--color-cream);
+  --secondary: var(--color-sand-200);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-sand-200);
+  --muted-foreground: var(--color-sand-700);
+  --accent: var(--color-sand-300);
+  --accent-foreground: var(--color-ink);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: color-mix(in srgb, #201e1d 16%, transparent);
+  --input: var(--color-sand-500);
+  --ring: var(--color-terracotta);
+  --chart-1: var(--color-terracotta-300);
+  --chart-2: var(--color-terracotta-400);
+  --chart-3: var(--color-terracotta);
+  --chart-4: var(--color-terracotta-700);
+  --chart-5: var(--color-terracotta-900);
+  --radius: 1.25rem;
+  --sidebar: var(--color-surface);
+  --sidebar-foreground: var(--color-ink);
+  --sidebar-primary: var(--color-terracotta);
+  --sidebar-primary-foreground: var(--color-cream);
+  --sidebar-accent: var(--color-sand-300);
+  --sidebar-accent-foreground: var(--color-ink);
+  --sidebar-border: color-mix(in srgb, #201e1d 16%, transparent);
+  --sidebar-ring: var(--color-terracotta);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4 {
+    @apply font-heading font-normal tracking-tight;
+  }
 }

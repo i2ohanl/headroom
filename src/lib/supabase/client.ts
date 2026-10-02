@@ -1,4 +1,9 @@
 // Browser Supabase client, for client components.
-// TODO: createBrowserClient(NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) from @supabase/ssr
+import { createBrowserClient } from "@supabase/ssr";
 
-export {};
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+  );
+}

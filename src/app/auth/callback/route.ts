@@ -1,5 +1,16 @@
-// Landing point for the emailed link.
-// TODO: read `code` from the URL, call supabase.auth.exchangeCodeForSession(code)
-// TODO: on success redirect to /courses; on failure redirect to /sign-in with an error flag
+// Landing point for the emailed link: swaps the code for a session.
+import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
-export {};
+export async function GET(request: NextRequest) {
+  const { origin, searchParams } = request.nextUrl;
+  const code = searchParams.get("code");
+
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) return NextResponse.redirect(`${origin}/courses`);
+  }
+
+  return NextResponse.redirect(`${origin}/sign-in?error=link`);
+}

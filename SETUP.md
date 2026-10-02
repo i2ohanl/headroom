@@ -44,7 +44,7 @@ The design is the "Organic" system from the Claude Design project (see CLAUDE.md
 
 Done (see `src/app/layout.tsx`, `src/app/globals.css`, `src/components/ui/`):
 
-1. Fonts: Caprasimo (headings) and Figtree (body) load through `next/font/google` as `--font-caprasimo` and `--font-figtree`. Tailwind's `font-heading` and `font-sans` use them.
+1. Fonts: Libre Caslon Text (headings, as set in the wireframes) and Figtree (body) load through `next/font/google` as `--font-caslon` and `--font-figtree`. Tailwind's `font-heading` and `font-sans` use them.
 2. Tokens: Organic's colours, shadows and radii are in `globals.css`. Ramps are renamed so they don't clash with shadcn or Tailwind: `neutral` is `sand-100..900`, `accent` is `terracotta-100..900`, `accent-2` is `sage-100..900`, plus `cream`, `surface` and `ink`. Use them as Tailwind classes, e.g. `bg-sand-200` or `text-terracotta-700`.
 3. shadcn mapping: `--background`, `--primary`, `--card`, `--border`, `--ring` and the rest point at those tokens. Light theme only; the dark block was removed. `--radius` is 1.25rem.
 4. Pill shapes: `button.tsx` and `input.tsx` use `rounded-full`.

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Caprasimo, Figtree } from "next/font/google";
+import { Figtree, Libre_Caslon_Text } from "next/font/google";
 import "./globals.css";
 
-const caprasimo = Caprasimo({
-  variable: "--font-caprasimo",
-  weight: "400",
+const caslon = Libre_Caslon_Text({
+  variable: "--font-caslon",
+  weight: ["400", "700"],
   subsets: ["latin"],
 });
 
@@ -22,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${caprasimo.variable} ${figtree.variable} h-full antialiased`}
+      className={`${caslon.variable} ${figtree.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

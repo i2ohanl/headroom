@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { DraftAssignment } from "@/lib/courses";
+import { normalizeCode, type DraftAssignment } from "@/lib/courses";
 
 export type SaveResult = { status: "saved" } | { status: "invalid"; message: string } | { status: "error" };
 
@@ -10,7 +10,7 @@ const isDate = (v: string | null) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v)
 
 // Saves the reviewed assignments. The shared defaults come from the stored draft inside the
 // save_draft function; what we send here becomes the student's own copy where it differs.
-export async function saveDraft(draftId: string, assignments: DraftAssignment[]): Promise<SaveResult> {
+function validate(assignments: DraftAssignment[]): SaveResult | null {
   for (const a of assignments) {
     if (!a.title.trim()) return { status: "invalid", message: "Every assignment needs a title." };
     if (!isDate(a.due_date)) return { status: "invalid", message: "Check the due dates." };
@@ -24,6 +24,12 @@ export async function saveDraft(draftId: string, assignments: DraftAssignment[])
       }
     }
   }
+  return null;
+}
+
+export async function saveDraft(draftId: string, assignments: DraftAssignment[]): Promise<SaveResult> {
+  const invalid = validate(assignments);
+  if (invalid) return invalid;
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("save_draft", { p_draft: draftId, p_assignments: assignments });
@@ -32,5 +38,38 @@ export async function saveDraft(draftId: string, assignments: DraftAssignment[])
     return { status: "error" };
   }
   revalidatePath("/courses");
+  return { status: "saved" };
+}
+
+// Saves the student's own copy of a course's assignments after the fact (feature 3b).
+export async function saveMyAssignments(
+  rawCode: string,
+  assignments: (DraftAssignment & { id: string })[],
+): Promise<SaveResult> {
+  const invalid = validate(assignments);
+  if (invalid) return invalid;
+
+  const code = normalizeCode(rawCode);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("save_my_assignments", { p_course: code, p_assignments: assignments });
+  if (error) {
+    console.error("save_my_assignments failed", error.message);
+    return { status: "error" };
+  }
+  revalidatePath("/courses");
+  revalidatePath(`/courses/${code}/review`);
+  return { status: "saved" };
+}
+
+// Puts one assignment back to the shared suggestion by deleting the student's own copy
+// (their tasks go with it). Allowed by the existing row-level security: it only matches their rows.
+export async function resetMyAssignment(assignmentId: string, rawCode: string): Promise<SaveResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("student_assignment_edits").delete().eq("assignment_id", assignmentId);
+  if (error) {
+    console.error("reset failed", error.message);
+    return { status: "error" };
+  }
+  revalidatePath(`/courses/${normalizeCode(rawCode)}/review`);
   return { status: "saved" };
 }

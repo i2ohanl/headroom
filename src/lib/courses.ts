@@ -83,3 +83,11 @@ export function formatBytes(bytes: number) {
     ? `${Math.max(1, Math.round(bytes / 1024))} KB`
     : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+// One assignment as the signed-in student sees it: their own copy where they have edited,
+// the shared suggestion otherwise. `shared` is what they would go back to on a reset.
+export type MyAssignment = DraftAssignment & {
+  id: string;
+  edited: boolean;
+  shared: { due_date: string | null; weight_pct: number | null; task_count: number };
+};

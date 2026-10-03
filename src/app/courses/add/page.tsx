@@ -3,12 +3,13 @@ import { CoursesView } from "../courses-view";
 import { CourseModal } from "../course-modal";
 import { AddCourse } from "../add-course";
 
-export default function AddPage() {
+export default async function AddPage({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
+  const { code } = await searchParams;
   return (
     <>
       <CoursesView />
       <CourseModal>
-        <AddCourse />
+        <AddCourse initialCode={code} />
       </CourseModal>
     </>
   );

@@ -3,6 +3,7 @@
 // Screen 2, add-a-course modal. States: choose (type a code), found, code not found (ask for
 // the course name), and upload (see upload-assignment.tsx for uploading, error and duplicate).
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, CircleAlert, Loader2, Plus } from "lucide-react";
 import { DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,17 @@ type View =
   | { name: "found"; course: CourseDetail }
   | { name: "upload"; code: string; courseName: string | null; courseExists: boolean; enrolled: boolean };
 
-export function AddCourse() {
+// initialCode: open straight on the upload step for a course the student already has
+// (the "Add an assignment" button on the course screen).
+export function AddCourse({ initialCode }: { initialCode?: string }) {
   const close = useCloseModal();
-  const [view, setView] = useState<View>({ name: "choose" });
+  const router = useRouter();
+  const [view, setView] = useState<View>(() => {
+    const start = initialCode ? normalizeCode(initialCode) : "";
+    return isValidCode(start)
+      ? { name: "upload", code: start, courseName: null, courseExists: true, enrolled: true }
+      : { name: "choose" };
+  });
   const [code, setCode] = useState("");
   const [lookup, setLookup] = useState<Lookup>({ status: "idle" });
   const [newName, setNewName] = useState("");
@@ -124,7 +133,9 @@ export function AddCourse() {
     setAdding("adding");
     const result = await addCourse(course.code);
     if (result.status === "added") {
-      close();
+      // Straight to the student's own estimates for the course, so they can adjust them.
+      if (course.assignments.length > 0) router.push(`/courses/${course.code}/review`);
+      else close();
     } else {
       setAdding("error");
     }
@@ -344,7 +355,7 @@ export function AddCourse() {
                 </Button>
                 <AddUnlistedButton found={found} onPick={setView} />
               </div>
-              <p className="text-sm text-muted-foreground">You can edit estimates after adding.</p>
+              <p className="text-sm text-muted-foreground">Next, you can adjust the estimates to fit you.</p>
               {adding === "error" && (
                 <p role="alert" className="flex items-start gap-2 text-sm text-destructive">
                   <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />

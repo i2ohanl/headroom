@@ -1,6 +1,6 @@
 // Screen 2: My courses. The header row, then one plain row per course, or an empty state.
 import Link from "next/link";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, ChevronRight, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -82,20 +82,24 @@ export async function CoursesView() {
       ) : (
         <ul className="flex flex-col gap-3">
           {courses.map((c) => (
-            <li
-              key={c.code}
-              className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 rounded-2xl bg-sand-200 px-7 py-5 sm:grid-cols-[8rem_1fr_auto]"
-            >
-              <span className="text-lg font-bold">{formatCode(c.code)}</span>
-              <span className="order-3 col-span-2 text-lg sm:order-none sm:col-span-1">
-                {c.name}
-                {c.is_demo && (
-                  <span className="ml-3 rounded-full bg-sand-300 px-2.5 py-0.5 align-middle text-xs font-semibold tracking-wide text-sand-800 uppercase">
-                    Demo data
-                  </span>
-                )}
-              </span>
-              <span className="text-muted-foreground">{pluralise(c.assignment_count, "assignment")}</span>
+            <li key={c.code}>
+              <Link
+                href={`/courses/${c.code}/review`}
+                aria-label={`${formatCode(c.code)} ${c.name}: view and edit your estimates`}
+                className="grid grid-cols-[1fr_auto_1.5rem] items-center gap-x-6 gap-y-1 rounded-2xl bg-sand-200 px-7 py-5 transition-colors hover:bg-sand-300 focus-visible:outline-2 focus-visible:outline-ring sm:grid-cols-[8rem_1fr_auto_1.5rem]"
+              >
+                <span className="text-lg font-bold">{formatCode(c.code)}</span>
+                <span className="order-3 col-span-3 text-lg sm:order-none sm:col-span-1">
+                  {c.name}
+                  {c.is_demo && (
+                    <span className="ml-3 rounded-full bg-sand-300 px-2.5 py-0.5 align-middle text-xs font-semibold tracking-wide text-sand-800 uppercase">
+                      Demo data
+                    </span>
+                  )}
+                </span>
+                <span className="text-muted-foreground">{pluralise(c.assignment_count, "assignment")}</span>
+                <ChevronRight className="size-5 text-sand-600" aria-hidden />
+              </Link>
             </li>
           ))}
         </ul>

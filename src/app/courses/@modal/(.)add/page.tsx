@@ -2,10 +2,11 @@
 import { CourseModal } from "../../course-modal";
 import { AddCourse } from "../../add-course";
 
-export default function InterceptedAddPage() {
+export default async function InterceptedAddPage({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
+  const { code } = await searchParams;
   return (
     <CourseModal intercepted>
-      <AddCourse />
+      <AddCourse initialCode={code} />
     </CourseModal>
   );
 }

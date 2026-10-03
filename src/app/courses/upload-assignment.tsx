@@ -126,7 +126,7 @@ export function UploadAssignment({
   async function enrol() {
     setEnrolling("busy");
     const result = await addCourse(code);
-    if (result.status === "added") close();
+    if (result.status === "added") router.push(`/courses/${code}/review`);
     else setEnrolling("error");
   }
 

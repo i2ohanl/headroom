@@ -68,7 +68,7 @@ Feature 3 only lets a student edit what they just uploaded. Students who adopt a
 - Saving writes only what differs from the shared version to the student's own copy (`student_assignment_edits`, `student_tasks`). Shared rows are never changed. A student can also reset an assignment to the shared suggestion.
 - A student can edit any field, including a due date, add or remove tasks, and change hours. Other students never see these edits.
 - Anywhere the app shows a student their own numbers (the review screen, and the plan in feature 4), it uses their own copy first and falls back to the shared suggestion. The clash checker already prefers a student's own due date.
-- This needs a database function so a student can save their copy for assignments they did not upload. Propose it as a migration file and wait for approval before applying anything.
+- Students can already write their own copy under the existing policies. A database function is only there to save a copy all-or-nothing and to share the "store only what differs" logic with the upload flow. Propose it as a migration file and wait for approval before applying anything.
 - Needs the usual loading, empty and error states. Does not add a screen.
 
 ### 4. Plan view (student)

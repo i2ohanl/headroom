@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SignInForm } from "./sign-in-form";
 
 const EXAMPLE_STEPS = [
-  "Upload your course outline",
+  "Add a course, then upload an assignment's brief and rubric",
   "See every assignment with an hour estimate",
   "Spot your busiest weeks before they arrive",
 ];

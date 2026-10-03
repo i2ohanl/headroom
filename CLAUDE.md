@@ -2,7 +2,7 @@
 
 ## What this is
 
-A web app for a university hackathon with the theme "Innovate Education". Students upload a course outline and get their deadlines, an effort estimate for each assignment, and a plan. Because many students do this, the app also knows when a course's students are busiest, and a lecturer can use that to pick a due date with the fewest clashes.
+A web app for a university hackathon with the theme "Innovate Education". Students upload their assignment materials and get their deadlines, an effort estimate for each assignment, and a plan. Because many students do this, the app also knows when a course's students are busiest, and a lecturer can use that to pick a due date with the fewest clashes.
 
 The build window is about 36 hours, with roughly 12 to 15 real working hours. The submission is a video. Scope is fixed by this file: do not add features that are not listed here.
 
@@ -45,15 +45,16 @@ Just enough to save a student's courses and plan. Use email sign-in through Supa
 
 ### 2. Add a course (student)
 
-The student either uploads a course outline or assignment brief as a PDF, or types a course code.
+The student types a course code, then either uses an assignment already in the app or adds one by uploading its materials. There is no single course-overview document. An assignment's materials are several PDFs: the brief, the rubric, the requirements and tasks, and sometimes a course-content page. Some will be printouts of web pages.
 
 - If the course code already exists in the app, load its assignments instantly with no upload.
-- If it does not exist, the upload creates the course and its assignments for everyone.
+- If it does not exist, the student types the course name to create the course, then adds assignments by upload. The course and its assignments are then available to everyone.
+- An upload is one assignment: the student drops all of its PDFs together and they go to the AI in one call. If an assignment with the same normalised title already exists in the course, offer the existing one instead of creating a duplicate.
 - The set of courses a student has added is their enrolment. There is no separate enrolment step.
 
 ### 3. Breakdown and estimate (student)
 
-After an upload, the AI returns the course's assignments. For each one it gives the title, the due date, the weighting if stated, and a list of tasks with an hour range for each task.
+After an upload, the AI returns the assignment (or assignments, if a schedule page lists several). For each one it gives the title, the due date, the weighting if stated, and a list of tasks with an hour range for each task.
 
 - The student reviews the result on one screen and can edit any field before saving.
 - The breakdown and estimates are generated once per assignment and shared as the default for that course. A student's edits apply only to their own copy.
@@ -105,7 +106,7 @@ A student counts as clashing with a proposed due date if they have at least one 
 - Estimate from the tasks described in the brief. Use weighting only as a sanity check.
 - Always return hour ranges, never single numbers.
 - Never invent a due date. If the document does not state one, return it as missing and have the review screen ask the student for it.
-- If extraction fails or the document is not a course outline, show a clear error and let the student enter the assignment by hand.
+- If extraction fails or the documents are not assignment materials, show a clear error and let the student enter the assignment by hand.
 
 ### Seeded data
 
@@ -138,7 +139,7 @@ Students and courses are many-to-many, and the clash count is a join across them
 
 - Send the PDF to the API directly as a document. Do not add a PDF parsing library.
 - Use structured outputs so the response always matches a JSON schema that we define.
-- One call per upload should return the course code, the course name, and the assignments with their tasks and hour ranges.
+- One call per upload sends all of the assignment's PDFs together as document blocks and returns the assignment(s) with their tasks and hour ranges. The course code and name are typed by the student, not extracted. Use the rubric to shape the tasks and the brief for the due date.
 - Keep the API key in an environment variable and never send it to the browser.
 - Check the current docs for exact parameter names and the model string instead of relying on memory. Start at https://platform.claude.com/docs/en/build-with-claude/pdf-support and the Structured outputs page in the same section. A mid-tier model is enough for this task.
 
@@ -160,7 +161,7 @@ The starting design is the low-fi wireframes in the Claude Design project "Workl
 - **How it meets the stack:** Tailwind and shadcn/ui stay. The Organic tokens are mapped into `globals.css` and the shadcn theme variables. We do not import Organic's `.btn`, `.card` etc. classes. Icons are Lucide.
 - **Routes (from the wireframes):** `/sign-in`, `/courses`, `/courses/add` (a modal over `/courses`), `/courses/[code]/review`, `/plan`, `/check/[code]` (public).
 - **Screen 1, sign-in:** email field, "Email me a sign-in link", a short example preview panel labelled "Example", and a link "Lecturer? Check a due date for clashes" to the clash checker.
-- **Screen 2, add a course:** one modal with five states: choose (upload PDF or type a code), code found (shows the existing deadlines and an "Add to my courses" button), uploading (progress and steps), error (unreadable document, with "try another file" or "type the code"), and the courses list behind it. The list has an empty state still to design.
+- **Screen 2, add a course:** one modal with five states: choose (type a code), code found (shows the existing deadlines and an "Add to my courses" button), new course (code not found: ask for the course name), add an assignment (drop several PDFs, or pick an existing assignment), uploading (progress and steps), error (unreadable documents, with "try other files" or "type the code"), and the courses list behind it. The list has an empty state still to design.
 - **Screen 3, review:** one card per assignment with title, due date, weight, and tasks with "lo to hi hours". A missing due date gets a dashed, highlighted input and a notice. Save is shown with a count of missing dates.
 - **Screen 4, plan:** rows are assignments grouped by course, columns are the semester weeks, cells show hours, deadlines are dots, and a "Hours per week" bar row marks the busiest weeks.
 - **Screen 5, clash checker:** course code field, a "DEMO DATA" badge, a large "X of Y" count, a day-by-day heatmap (84 cells for a 12-week semester) with a draggable marker, week labels, and a quiet-to-busy legend.
@@ -172,7 +173,7 @@ The starting design is the low-fi wireframes in the Claude Design project "Workl
 - Work one feature at a time, in the build order above. Do not jump ahead.
 - Ask when a product decision is unclear. Do not guess and build.
 - Do not use a chart library. The heatmap is a grid of coloured cells and the slider is a standard range input.
-- Test extraction against the real course outlines in `/samples` early, before building the screens that depend on it.
+- Test extraction against real assignment materials (brief, rubric, requirements, web printouts) in `/samples` early, before building the screens that depend on it.
 - Every screen that loads or submits data needs a loading state, an empty state, and an error state.
 - Never make git commits, and never push, branch, or otherwise change git history or state. The user makes all commits. Leave changes uncommitted, and when a feature or fix is finished, say what changed so the user can commit it as one small, focused commit.
 
@@ -181,7 +182,7 @@ The starting design is the low-fi wireframes in the Claude Design project "Workl
 This path works reliably, start to finish, on a fresh database with seeded data:
 
 1. A student signs in.
-2. They upload a real course outline.
+2. They add an assignment by uploading its real materials (several PDFs).
 3. They see the extracted assignments with tasks and hour ranges, edit one, and save.
 4. They see their plan with busy weeks highlighted.
 5. A second student types the same course code and gets the assignments with no upload.

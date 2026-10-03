@@ -59,6 +59,18 @@ After an upload, the AI returns the assignment (or assignments, if a schedule pa
 - The student reviews the result on one screen and can edit any field before saving.
 - The breakdown and estimates are generated once per assignment and shared as the default for that course. A student's edits apply only to their own copy.
 
+### 3b. Edit your own copy (student)
+
+Feature 3 only lets a student edit what they just uploaded. Students who adopt an existing course, and anyone coming back later, also need to change the shared estimates for themselves. One student may need 1 hour for a task that another needs 3. The shared version is only a suggestion.
+
+- After "Add to my courses" (the course already exists), open the review screen for that course's assignments, showing the student's values: their own copy where they have edited, the shared suggestion otherwise. This is what the modal means by "You can edit estimates after adding".
+- Make each course row on My courses clickable (`›`). It opens the same review screen for that course, so a student can edit their copy at any time. This reuses the review screen. It is not a new screen.
+- Saving writes only what differs from the shared version to the student's own copy (`student_assignment_edits`, `student_tasks`). Shared rows are never changed. A student can also reset an assignment to the shared suggestion.
+- A student can edit any field, including a due date, add or remove tasks, and change hours. Other students never see these edits.
+- Anywhere the app shows a student their own numbers (the review screen, and the plan in feature 4), it uses their own copy first and falls back to the shared suggestion. The clash checker already prefers a student's own due date.
+- This needs a database function so a student can save their copy for assignments they did not upload. Propose it as a migration file and wait for approval before applying anything.
+- Needs the usual loading, empty and error states. Does not add a screen.
+
 ### 4. Plan view (student)
 
 Shows the student's assignments across the semester, with each assignment's estimated hours spread over the weeks before its deadline and the busy weeks made obvious.
@@ -147,7 +159,7 @@ Students and courses are many-to-many, and the clash count is a join across them
 
 1. Sign-in
 2. My courses, with the add-a-course action
-3. Assignment review, shown after an upload
+3. Assignment review, shown after an upload, after adding an existing course, and when a course row is opened
 4. Plan
 5. Clash checker (public)
 
@@ -159,13 +171,13 @@ The starting design is the low-fi wireframes in the Claude Design project "Workl
 
 - **Visual style:** the "Organic" design system in the same project (`_ds/organic-.../styles.css` and `readme.md`). Warm cream ground, terracotta accent, sage second accent, Libre Caslon Text headings (the wireframes override Organic's Caprasimo) over Figtree body, pill-shaped buttons and inputs, large rounded cards. Take colours, fonts, radii and shadows from its tokens (in `globals.css`; ramps renamed `sand`, `terracotta`, `sage`). Do not hard-code hex values. The wireframes use the neutral ramp only; the accent colours are for emphasis (busy weeks, deadlines, primary buttons).
 - **How it meets the stack:** Tailwind and shadcn/ui stay. The Organic tokens are mapped into `globals.css` and the shadcn theme variables. We do not import Organic's `.btn`, `.card` etc. classes. Icons are Lucide.
-- **Routes (from the wireframes):** `/sign-in`, `/courses`, `/courses/add` (a modal over `/courses`), `/courses/[code]/review`, `/plan`, `/check/[code]` (public).
+- **Routes (from the wireframes):** `/sign-in`, `/courses`, `/courses/add` (a modal over `/courses`), `/courses/[code]/review` (after an upload it loads a draft; for 3b it loads the student's own assignments), `/plan`, `/check/[code]` (public).
 - **Screen 1, sign-in:** email field, "Email me a sign-in link", a short example preview panel labelled "Example", and a link "Lecturer? Check a due date for clashes" to the clash checker.
 - **Screen 2, add a course:** one modal with five states: choose (type a code), code found (shows the existing deadlines and an "Add to my courses" button), new course (code not found: ask for the course name), add an assignment (drop several PDFs, or pick an existing assignment), uploading (progress and steps), error (unreadable documents, with "try other files" or "type the code"), and the courses list behind it. The list has an empty state still to design.
 - **Screen 3, review:** one card per assignment with title, due date, weight, and tasks with "lo to hi hours". A missing due date gets a dashed, highlighted input and a notice. Save is shown with a count of missing dates.
 - **Screen 4, plan:** rows are assignments grouped by course, columns are the semester weeks, cells show hours, deadlines are dots, and a "Hours per week" bar row marks the busiest weeks.
 - **Screen 5, clash checker:** course code field, a "DEMO DATA" badge, a large "X of Y" count, a day-by-day heatmap (84 cells for a 12-week semester) with a draggable marker, week labels, and a quiet-to-busy legend.
-- **Where the wireframes go beyond this file:** the "Example" panel on sign-in, the bar row on the plan screen, the verdict line on the clash checker ("Busy week for your students"), and the course rows on screen 2 being clickable (`›`). A clickable row would need a course detail screen, which is not in the screen list, so it stays a plain row until it is agreed.
+- **Where the wireframes go beyond this file:** the "Example" panel on sign-in, the bar row on the plan screen, the verdict line on the clash checker ("Busy week for your students"), and the course rows on screen 2 being clickable (`›`). The clickable rows are agreed (feature 3b): a row opens the existing review screen for that course, not a new course detail screen.
 
 ## Working agreements
 

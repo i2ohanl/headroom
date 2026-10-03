@@ -50,3 +50,36 @@ export function formatDueDate(iso: string) {
 export function pluralise(n: number, word: string) {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
+
+// Same rule as assignments.title_key in the database: lowercase letters and digits only.
+// "Assignment 1: Analysis Report" and "assignment 1 analysis report" are the same assignment.
+export function titleKey(title: string) {
+  return title.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+// What the AI extracted, after the server has cleaned it. Stored in extraction_drafts.payload
+// and edited on the review screen.
+export type DraftTask = {
+  name: string;
+  description: string;
+  hours_lo: number;
+  hours_hi: number;
+};
+
+export type DraftAssignment = {
+  title: string;
+  due_date: string | null; // YYYY-MM-DD, null when the documents did not state one
+  weight_pct: number | null;
+  tasks: DraftTask[];
+};
+
+export const UPLOAD_LIMITS = {
+  maxFiles: 6,
+  maxTotalBytes: 20 * 1024 * 1024,
+};
+
+export function formatBytes(bytes: number) {
+  return bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}

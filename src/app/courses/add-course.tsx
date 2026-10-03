@@ -1,7 +1,7 @@
 "use client";
 
-// Screen 2, add-a-course modal. States: choose (type a code), found, and code not found.
-// Creating a new course and adding assignments to it is feature 3.
+// Screen 2, add-a-course modal. States: choose (type a code), found, code not found (ask for
+// the course name), and upload (see upload-assignment.tsx for uploading, error and duplicate).
 import { useEffect, useRef, useState } from "react";
 import { Check, CircleAlert, Loader2, Plus } from "lucide-react";
 import { DialogTitle } from "@/components/ui/dialog";
@@ -18,6 +18,7 @@ import {
 } from "@/lib/courses";
 import { addCourse, lookupCourse, searchCourses, type CourseOption } from "./actions";
 import { useCloseModal } from "./course-modal";
+import { UploadAssignment } from "./upload-assignment";
 
 type Lookup =
   | { status: "idle" }
@@ -28,13 +29,15 @@ type Lookup =
 
 type View =
   | { name: "choose" }
-  | { name: "found"; course: CourseDetail };
+  | { name: "found"; course: CourseDetail }
+  | { name: "upload"; code: string; courseName: string | null; courseExists: boolean; enrolled: boolean };
 
 export function AddCourse() {
   const close = useCloseModal();
   const [view, setView] = useState<View>({ name: "choose" });
   const [code, setCode] = useState("");
   const [lookup, setLookup] = useState<Lookup>({ status: "idle" });
+  const [newName, setNewName] = useState("");
   const [adding, setAdding] = useState<"idle" | "adding" | "error">("idle");
   const [options, setOptions] = useState<CourseOption[] | null>(null); // null = list closed
   const [active, setActive] = useState(-1);
@@ -127,6 +130,12 @@ export function AddCourse() {
     }
   }
 
+  function backToCode() {
+    setView({ name: "choose" });
+    setLookup({ status: "idle" });
+    setAdding("idle");
+  }
+
   const looking = lookup.status === "loading";
   const found = view.name === "found" ? view.course : null;
   const codeError =
@@ -135,6 +144,21 @@ export function AddCourse() {
       : lookup.status === "error"
           ? "Something went wrong looking that up. Try again."
           : null;
+
+  if (view.name === "upload") {
+    return (
+      <div className="flex flex-col gap-6">
+        <DialogTitle className="sr-only">Add an assignment</DialogTitle>
+        <UploadAssignment
+          code={view.code}
+          courseName={view.courseName}
+          courseExists={view.courseExists}
+          enrolled={view.enrolled}
+          onTypeCode={backToCode}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -225,14 +249,33 @@ export function AddCourse() {
               Check the code, or add it as a new course so classmates can find it too.
             </p>
           </div>
-          {/* TODO feature 3: create the course (ask for its name) and add its first assignment. */}
-          <div className="flex flex-wrap items-center gap-4">
-            <Button className="h-12 gap-2 px-6 text-base" disabled>
-              <Plus aria-hidden />
-              Add a new course
-            </Button>
-            <span className="text-sm text-muted-foreground">Coming in the next update.</span>
-          </div>
+          <form
+            className="flex flex-col gap-2.5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const name = newName.trim();
+              if (name)
+                setView({ name: "upload", code: lookup.code, courseName: name, courseExists: false, enrolled: false });
+            }}
+          >
+            <Label htmlFor="course-name">Course name</Label>
+            <Input
+              id="course-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="e.g. Applied Regression"
+              autoComplete="off"
+              maxLength={120}
+              className="h-12 w-full px-5 text-base"
+            />
+            <div className="flex flex-wrap items-center gap-4 pt-1.5">
+              <Button type="submit" className="h-12 gap-2 px-6 text-base" disabled={!newName.trim()}>
+                <Plus aria-hidden />
+                Add a new course
+              </Button>
+              <span className="text-sm text-muted-foreground">Next, add its first assignment.</span>
+            </div>
+          </form>
         </section>
       )}
 
@@ -286,6 +329,7 @@ export function AddCourse() {
               <Button variant="outline" className="h-12 px-6 text-base" onClick={close}>
                 Done
               </Button>
+              <AddUnlistedButton found={found} onPick={setView} />
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -298,10 +342,9 @@ export function AddCourse() {
                   {adding === "adding" && <Loader2 className="animate-spin" aria-hidden />}
                   {adding === "adding" ? "Adding..." : "Add to my courses"}
                 </Button>
-                <span className="text-sm text-muted-foreground">
-                  You can edit estimates after adding.
-                </span>
+                <AddUnlistedButton found={found} onPick={setView} />
               </div>
+              <p className="text-sm text-muted-foreground">You can edit estimates after adding.</p>
               {adding === "error" && (
                 <p role="alert" className="flex items-start gap-2 text-sm text-destructive">
                   <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -313,5 +356,21 @@ export function AddCourse() {
         </>
       )}
     </div>
+  );
+}
+
+// For an assignment that is not in the list yet. Available whether or not the student has the course.
+function AddUnlistedButton({ found, onPick }: { found: CourseDetail; onPick: (v: View) => void }) {
+  return (
+    <Button
+      variant="outline"
+      className="h-12 gap-2 px-6 text-base"
+      onClick={() =>
+        onPick({ name: "upload", code: found.code, courseName: null, courseExists: true, enrolled: found.enrolled })
+      }
+    >
+      <Plus aria-hidden />
+      Add an assignment that isn&apos;t listed
+    </Button>
   );
 }

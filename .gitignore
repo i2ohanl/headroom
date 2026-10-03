@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# real course materials for extraction testing (may be copyrighted or personal)
+/samples/

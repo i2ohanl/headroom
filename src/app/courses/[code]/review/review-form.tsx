@@ -101,6 +101,7 @@ export function ReviewForm(props: Props) {
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
+    if (missing > 0) return setError("Every assignment needs a due date before you can save.");
     const drafts: (DraftAssignment & { id?: string })[] = [];
     for (const item of items) {
       const d = toDraft(item);
@@ -200,7 +201,7 @@ export function ReviewForm(props: Props) {
                 className="flex items-center gap-3 self-start rounded-full bg-terracotta-600 px-5 py-2.5 text-[15px] text-white"
               >
                 <strong>No due date found.</strong>
-                <span>Please fill it in so we can plan for it.</span>
+                <span>Please fill it in to save. We need it to plan for it.</span>
               </p>
             )}
 
@@ -283,15 +284,15 @@ export function ReviewForm(props: Props) {
       )}
 
       <div className="flex flex-wrap items-center gap-5">
-        <Button type="submit" disabled={saving} className="h-13 px-9 text-[17px]">
+        <Button type="submit" disabled={saving || missing > 0} className="h-13 px-9 text-[17px]">
           {saving && <Loader2 className="animate-spin" aria-hidden />}
           {saving ? "Saving..." : props.mode === "mine" ? "Save my changes" : "Save"}
         </Button>
         <Link href="/courses" className={cn(buttonVariants({ variant: "ghost" }), "h-13 px-6 text-base")}>
           {props.mode === "mine" ? "Back" : "Discard"}
         </Link>
-        <span role="status" className="text-muted-foreground">
-          {missing === 0 ? "All due dates filled in" : `${pluralise(missing, "due date")} still missing`}
+        <span role="status" className={missing === 0 ? "text-muted-foreground" : "font-semibold text-terracotta-700"}>
+          {missing === 0 ? "All due dates filled in" : `Add ${pluralise(missing, "due date")} to save`}
         </span>
       </div>
 

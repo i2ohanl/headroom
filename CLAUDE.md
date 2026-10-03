@@ -117,7 +117,7 @@ A student counts as clashing with a proposed due date if they have at least one 
 
 - Estimate from the tasks described in the brief. Use weighting only as a sanity check.
 - Always return hour ranges, never single numbers.
-- Never invent a due date. If the document does not state one, return it as missing and have the review screen ask the student for it.
+- Never invent a due date. If the day and month are stated but the year is not, assume the current year (the student reviews it anyway). If the document does not state a date, return it as missing and have the review screen ask the student for it. A student cannot save an assignment until it has a due date, so the plan never has an undated assignment.
 - If extraction fails or the documents are not assignment materials, show a clear error and let the student enter the assignment by hand.
 
 ### Seeded data
@@ -174,7 +174,7 @@ The starting design is the low-fi wireframes in the Claude Design project "Workl
 - **Routes (from the wireframes):** `/sign-in`, `/courses`, `/courses/add` (a modal over `/courses`), `/courses/[code]/review` (after an upload it loads a draft; for 3b it loads the student's own assignments), `/plan`, `/check/[code]` (public).
 - **Screen 1, sign-in:** email field, "Email me a sign-in link", a short example preview panel labelled "Example", and a link "Lecturer? Check a due date for clashes" to the clash checker.
 - **Screen 2, add a course:** one modal with five states: choose (type a code), code found (shows the existing deadlines and an "Add to my courses" button), new course (code not found: ask for the course name), add an assignment (drop several PDFs, or pick an existing assignment), uploading (progress and steps), error (unreadable documents, with "try other files" or "type the code"), and the courses list behind it. The list has an empty state still to design.
-- **Screen 3, review:** one card per assignment with title, due date, weight, and tasks with "lo to hi hours". A missing due date gets a dashed, highlighted input and a notice. Save is shown with a count of missing dates.
+- **Screen 3, review:** one card per assignment with title, due date, weight, and tasks with "lo to hi hours". A missing due date gets a dashed, highlighted input and a notice. Save is disabled until every due date is filled in, and shows how many are still needed.
 - **Screen 4, plan:** rows are assignments grouped by course, columns are the semester weeks, cells show hours, deadlines are dots, and a "Hours per week" bar row marks the busiest weeks.
 - **Screen 5, clash checker:** course code field, a "DEMO DATA" badge, a large "X of Y" count, a day-by-day heatmap (84 cells for a 12-week semester) with a draggable marker, week labels, and a quiet-to-busy legend.
 - **Where the wireframes go beyond this file:** the "Example" panel on sign-in, the bar row on the plan screen, the verdict line on the clash checker ("Busy week for your students"), and the course rows on screen 2 being clickable (`›`). The clickable rows are agreed (feature 3b): a row opens the existing review screen for that course, not a new course detail screen.

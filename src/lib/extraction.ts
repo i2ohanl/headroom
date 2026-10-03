@@ -41,7 +41,7 @@ export const EXTRACTION_SCHEMA = {
         required: ["title", "due_date", "due_date_text", "weighting", "tasks"],
         properties: {
           title: { type: "string", description: "The assignment's own name only, e.g. 'Assignment 1: Analysis Report'. No course code or course name." },
-          due_date: nullable("string", "YYYY-MM-DD. Null unless the documents state the date explicitly."),
+          due_date: nullable("string", "YYYY-MM-DD. Null unless the documents state the day and month. The year defaults to the current year when not stated."),
           due_date_text: nullable("string", "The exact wording in the documents that gives the due date, or null."),
           weighting: nullable("string", "Share of the course grade as written, e.g. '30%'. Null if not stated."),
           tasks: {
@@ -64,13 +64,14 @@ export const EXTRACTION_SCHEMA = {
   },
 } as const;
 
-const SYSTEM_PROMPT = `You read the documents for ONE university assignment (brief, rubric, requirements and tasks, sometimes a course-content page) and return the assignment(s) with a task breakdown and effort estimate for a typical student.
+const systemPrompt = (year: number) => `You read the documents for ONE university assignment (brief, rubric, requirements and tasks, sometimes a course-content page) and return the assignment(s) with a task breakdown and effort estimate for a typical student.
 
 Rules:
 - Some documents are printouts of web pages. Ignore navigation, footers, cookie banners and other page noise.
 - If the documents are not assignment materials (lecture slides, an article, a receipt, unreadable), set is_assignment_material to false, explain in one plain sentence in "error", and return no assignments.
 - If a schedule lists several assignments, return each one. Otherwise return one.
-- Never invent a due date. Return due_date only if a date is stated for that assignment; use null otherwise. If the year is not stated, return null and quote the wording in due_date_text.
+- Never invent a due date. Return due_date only if a day and month are stated for that assignment; use null otherwise. Always quote the wording in due_date_text.
+- Documents often leave the year out. When the day and month are stated but the year is not, assume the current year, ${year}. If the documents also give a weekday (e.g. "Monday 17 August") and it does not fall on that day in ${year}, use the nearest year it does fall on. Never guess a day or month.
 - Return weighting only if stated, as written. It is only a sanity check on the total hours: a 10% task is rarely 60 hours.
 - Build the task list from what the brief asks the student to produce. Use the rubric to shape and name the tasks so effort goes where the marks are. Include reading, research, drafting and revision as tasks where the brief implies them. Use 3 to 8 tasks. Keep each task name to 8 words or fewer; put the detail in its one-sentence description.
 - The title is the assignment's own name only (e.g. "Assignment 1: Analysis Report"). Leave out the course code and course name; the student supplies those separately.
@@ -93,7 +94,7 @@ export async function extractAssignments(
   const response = await client.messages.create({
     model: EXTRACTION_MODEL,
     max_tokens: 16000,
-    system: SYSTEM_PROMPT,
+    system: systemPrompt(new Date().getFullYear()),
     output_config: { format: { type: "json_schema", schema: EXTRACTION_SCHEMA } },
     messages: [{ role: "user", content }],
   });

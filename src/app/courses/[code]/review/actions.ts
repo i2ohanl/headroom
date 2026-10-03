@@ -13,7 +13,7 @@ const isDate = (v: string | null) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v)
 function validate(assignments: DraftAssignment[]): SaveResult | null {
   for (const a of assignments) {
     if (!a.title.trim()) return { status: "invalid", message: "Every assignment needs a title." };
-    if (!isDate(a.due_date)) return { status: "invalid", message: "Check the due dates." };
+    if (!a.due_date || !isDate(a.due_date)) return { status: "invalid", message: "Every assignment needs a due date." };
     if (a.weight_pct !== null && !(a.weight_pct >= 0 && a.weight_pct <= 100)) {
       return { status: "invalid", message: "A weight must be between 0 and 100." };
     }
